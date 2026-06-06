@@ -1,0 +1,52 @@
+{
+  "name": "holzi-vscode",
+  "displayName": "Holzi",
+  "description": "Holzi AI assistant in VS Code",
+  "version": "0.1.0",
+  "publisher": "haex",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["AI"],
+  "activationEvents": ["onCommand:holzi.openChat"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "holzi.openChat", "title": "Holzi: Open Chat" }
+    ],
+    "configuration": {
+      "title": "Holzi",
+      "properties": {
+        "holzi.host": {
+          "type": "string",
+          "default": "https://holzi.haex.cloud",
+          "description": "Holzi server URL"
+        },
+        "holzi.token": {
+          "type": "string",
+          "description": "Auth token (Bearer)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json --watch",
+    "compile:webview": "tsc -p tsconfig.webview.json",
+    "test": "vitest run",
+    "mock-server": "npx ts-node mock-server/index.ts",
+    "package": "npx @vscode/vsce package"
+  },
+  "dependencies": {
+    "diff": "^5.2.0",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/diff": "^5.2.1",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@types/ws": "^8.5.10",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0",
+    "@vscode/vsce": "^2.24.0",
+    "ts-node": "^10.9.2"
+  }
+}

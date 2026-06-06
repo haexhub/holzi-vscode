@@ -1,0 +1,9 @@
+**/*.ts
+!out/**
+node_modules/
+src/
+tests/
+mock-server/
+docs/
+tsconfig*.json
+vitest.config.ts
