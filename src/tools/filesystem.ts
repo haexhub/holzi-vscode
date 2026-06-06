@@ -1,9 +1,9 @@
 import * as vscode from 'vscode'
 
-function resolveWorkspacePath(relPath: string): vscode.Uri {
+function resolveWorkspacePath(relPath: string): any {
   const folder = vscode.workspace.workspaceFolders?.[0]
   if (!folder) throw new Error('no_workspace')
-  return vscode.Uri.joinPath(folder.uri, relPath) as unknown as vscode.Uri
+  return vscode.Uri.joinPath(folder.uri as any, relPath)
 }
 
 export async function readFile(params: Record<string, unknown>): Promise<string> {
@@ -16,14 +16,10 @@ export async function writeFile(params: Record<string, unknown>): Promise<string
   const uri = resolveWorkspacePath(params.path as string)
   const content = params.content as string
   const edit = new vscode.WorkspaceEdit()
-  edit.createFile(uri as any, { overwrite: true })
-  edit.replace(
-    uri as any,
-    new vscode.Range(new vscode.Position(0, 0), new vscode.Position(99999, 0)),
-    content,
-  )
+  // createFile with contents writes atomically; overwrite:true handles existing files
+  edit.createFile(uri, { overwrite: true, contents: Buffer.from(content, 'utf-8') })
   await vscode.workspace.applyEdit(edit)
-  return `written ${(uri as any).fsPath}`
+  return `written ${uri.fsPath}`
 }
 
 export async function listDir(params: Record<string, unknown>): Promise<string> {
