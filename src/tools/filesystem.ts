@@ -1,9 +1,16 @@
 import * as vscode from 'vscode'
+import * as path from 'path'
 
 function resolveWorkspacePath(relPath: string): any {
   const folder = vscode.workspace.workspaceFolders?.[0]
   if (!folder) throw new Error('no_workspace')
-  return vscode.Uri.joinPath(folder.uri as any, relPath)
+  const resolved = vscode.Uri.joinPath(folder.uri as any, relPath)
+  const workspaceFsPath = (folder.uri as any).fsPath as string
+  const resolvedFsPath = (resolved as any).fsPath as string
+  if (!resolvedFsPath.startsWith(workspaceFsPath + path.sep) && resolvedFsPath !== workspaceFsPath) {
+    throw new Error('path_traversal_denied')
+  }
+  return resolved
 }
 
 export async function readFile(params: Record<string, unknown>): Promise<string> {

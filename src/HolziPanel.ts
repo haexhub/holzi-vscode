@@ -94,6 +94,10 @@ export class HolziPanel {
       this._post({ type: 'status', connected: false, connecting: true })
     })
 
+    this.socket.on('error', () => {
+      this._post({ type: 'status', connected: false, connecting: true })
+    })
+
     this.socket.on('message', async (msg: ServerMessage) => {
       switch (msg.type) {
         case 'stream_chunk':
@@ -108,7 +112,7 @@ export class HolziPanel {
           this._post({ type: 'tool_call_display', id: msg.id, name: msg.name, params: msg.params })
           const toolResult = await this.registry.execute(msg.name, msg.params as Record<string, unknown>)
           const denied = 'error' in toolResult && toolResult.error === 'user_denied'
-          const resultStr = 'result' in toolResult ? toolResult.result : (toolResult as any).error
+          const resultStr = 'result' in toolResult ? toolResult.result : toolResult.error
           this._post({ type: 'tool_result_display', id: msg.id, result: resultStr, denied })
           const wireMsg: ClientMessage = denied
             ? { type: 'tool_result', id: msg.id, error: 'user_denied' }
