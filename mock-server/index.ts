@@ -30,8 +30,14 @@ wss.on('connection', (ws: WebSocket) => {
       }))
 
       // Wait for tool_result
-      const result = await waitForResult(ws, callId)
-      console.log('[mock] tool result received:', result)
+      let result: any
+      try {
+        result = await waitForResult(ws, callId)
+        console.log('[mock] tool result received:', result)
+      } catch (err: any) {
+        console.warn('[mock] tool_result timeout:', err.message)
+        result = 'timeout'
+      }
 
       // Stream a reply
       const reply = `I read the file. Here is my response to: "${msg.content}"`
@@ -61,11 +67,17 @@ wss.on('connection', (ws: WebSocket) => {
   ws.on('error', (err) => console.error('[mock] error:', err.message))
 })
 
-function waitForResult(ws: WebSocket, callId: string): Promise<any> {
-  return new Promise((resolve) => {
+function waitForResult(ws: WebSocket, callId: string, timeout = 10000): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      ws.off('message', handler)
+      reject(new Error(`tool_result timeout for ${callId}`))
+    }, timeout)
+
     const handler = (raw: Buffer) => {
       const msg = JSON.parse(raw.toString())
       if (msg.type === 'tool_result' && msg.id === callId) {
+        clearTimeout(timer)
         ws.off('message', handler)
         resolve(msg.result ?? msg.error)
       }
