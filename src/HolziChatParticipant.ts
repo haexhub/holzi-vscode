@@ -92,7 +92,9 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
                 const denied = 'error' in result && result.error === 'user_denied'
                 const wire: ClientMessage = denied
                   ? { type: 'tool_result', id: msg.id, error: 'user_denied' }
-                  : { type: 'tool_result', id: msg.id, result: 'result' in result ? result.result : result.error }
+                  : 'error' in result
+                    ? { type: 'tool_result', id: msg.id, error: result.error }
+                    : { type: 'tool_result', id: msg.id, result: result.result }
                 socket.send(wire)
               } catch (err) {
                 socket.disconnect()

@@ -16,6 +16,7 @@ type FromExtension =
   | { type: 'tool_confirm_request'; id: string; name: string; params: Record<string, unknown>; diff?: string }
   | { type: 'tool_result_display'; id: string; result: string; denied: boolean }
   | { type: 'permission_mode_ack'; mode: string }
+  | { type: 'error'; message: string }
 
 declare function acquireVsCodeApi(): { postMessage(msg: ToExtension): void }
 const vscode = acquireVsCodeApi()
@@ -188,6 +189,13 @@ window.addEventListener('message', (e: MessageEvent) => {
 
   if (msg.type === 'permission_mode_ack') {
     permissionPicker.value = msg.mode
+    return
+  }
+
+  if (msg.type === 'error') {
+    const errEl = appendMessage('assistant', `Error: ${msg.message}`)
+    errEl.style.color = 'var(--vscode-errorForeground)'
+    sendBtn.disabled = false
     return
   }
 })

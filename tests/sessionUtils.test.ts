@@ -35,4 +35,11 @@ describe('mergeSessions', () => {
     const result = mergeSessions(local, remote)
     expect(result.map(r => r.id)).toEqual(['b', 'c', 'a'])
   })
+
+  it('ignores malformed remote entries', () => {
+    const local = [s('a', 1)]
+    const remote = [null, { id: '', updatedAt: 2 }, s('b', 3)] as any[]
+    const result = mergeSessions(local, remote)
+    expect(result.map(r => r.id)).toEqual(['b', 'a'])
+  })
 })

@@ -117,13 +117,20 @@ export class HolziPanel {
           this._post({ type: 'tool_result_display', id: msg.id, result: resultStr, denied })
           const wireMsg: ClientMessage = denied
             ? { type: 'tool_result', id: msg.id, error: 'user_denied' }
-            : { type: 'tool_result', id: msg.id, result: resultStr }
+            : 'error' in toolResult
+              ? { type: 'tool_result', id: msg.id, error: toolResult.error }
+              : { type: 'tool_result', id: msg.id, result: toolResult.result }
           this.socket.send(wireMsg)
           break
         }
 
         case 'permission_mode_ack':
           this._post({ type: 'permission_mode_ack', mode: msg.mode })
+          break
+
+        case 'error':
+          this._post({ type: 'error', message: msg.message })
+          this._post({ type: 'stream_done' })
           break
       }
     })

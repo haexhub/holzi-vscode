@@ -1,9 +1,7 @@
 import * as vscode from 'vscode'
 
 export async function getToken(context: vscode.ExtensionContext): Promise<string> {
-  return (await context.secrets.get('holzi.token'))
-    ?? vscode.workspace.getConfiguration('holzi').get<string>('token')
-    ?? ''
+  return (await context.secrets.get('holzi.token')) ?? ''
 }
 
 export function getHost(): string {

@@ -18,6 +18,15 @@ export function activate(context: vscode.ExtensionContext): void {
   statusBar.show()
   context.subscriptions.push(statusBar)
 
+  // Reflect persisted auth state immediately on activation
+  context.secrets.get('holzi.token').then(token => {
+    if (token) {
+      statusBar.text = '$(check) Holzi'
+      statusBar.tooltip = 'Holzi: connected'
+      statusBar.command = undefined
+    }
+  })
+
   // Commands
   context.subscriptions.push(
     vscode.commands.registerCommand('holzi.openChat', async (sessionId?: string) => {

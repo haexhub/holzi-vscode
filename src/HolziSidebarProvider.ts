@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import { mergeSessions, type SessionMeta } from './sessionUtils'
+import { mergeSessions, isSessionMeta, type SessionMeta } from './sessionUtils'
 import { getToken, getHost } from './config'
 
 const CACHE_KEY = 'holzi.sessions'
@@ -40,7 +40,7 @@ export class HolziSidebarProvider implements vscode.WebviewViewProvider {
       if (!res.ok) return
       const remote = await res.json()
       if (!Array.isArray(remote)) return
-      const merged = mergeSessions(this._sessions(), remote as SessionMeta[])
+      const merged = mergeSessions(this._sessions(), remote.filter(isSessionMeta))
       await this.context.globalState.update(CACHE_KEY, merged)
       await this._render()
     } catch {
