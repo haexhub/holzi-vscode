@@ -15,7 +15,8 @@ const emit = defineEmits<{
 
 <template>
   <SwitchRoot
-    v-bind="props"
+    :checked="props.checked"
+    :disabled="props.disabled"
     :class="cn(
       'peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent',
       'transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
