@@ -7,5 +7,6 @@ src/**
 tests/
 mock-server/
 docs/
+.worktrees/
 tsconfig*.json
 vitest.config.ts

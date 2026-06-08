@@ -6,6 +6,7 @@ type ToExtension =
   | { type: 'tool_confirm_response'; id: string; allowed: boolean }
   | { type: 'start_session'; model: string; skills: string[] }
   | { type: 'ready' }
+  | { type: 'pick_file' }
 
 type FromExtension =
   | { type: 'stream_chunk'; delta: string }
@@ -16,6 +17,7 @@ type FromExtension =
   | { type: 'tool_confirm_request'; id: string; name: string; params: Record<string, unknown>; diff?: string }
   | { type: 'tool_result_display'; id: string; result: string; denied: boolean }
   | { type: 'permission_mode_ack'; mode: string }
+  | { type: 'file_picked'; name: string; content: string }
   | { type: 'error'; message: string }
 
 declare function acquireVsCodeApi(): { postMessage(msg: ToExtension): void }
@@ -26,20 +28,33 @@ const inputEl = document.getElementById('input') as HTMLTextAreaElement
 const sendBtn = document.getElementById('btn-send') as HTMLButtonElement
 const statusDot = document.getElementById('status-dot')!
 const modelPicker = document.getElementById('model-picker') as HTMLSelectElement
-const permissionPicker = document.getElementById('permission-picker') as HTMLSelectElement
+const slashMenu = document.getElementById('slash-menu')!
+const permissionGroup = document.getElementById('permission-group')!
+const effortGroup = document.getElementById('effort-group')!
+const thinkingToggle = document.getElementById('thinking-toggle') as HTMLInputElement
+const skillsChips = document.getElementById('skills-chips')!
+const skillInput = document.getElementById('skill-input') as HTMLInputElement
+const fileChipsEl = document.getElementById('file-chips')!
+const modeLabelBtn = document.getElementById('btn-mode-label') as HTMLButtonElement
 
 let currentAssistantEl: HTMLDivElement | null = null
 let sessionStarted = false
+let currentPermissionMode = 'ask'
+let currentEffort = 'medium'
+const activeSkills: string[] = []
+
+interface AttachedFile { name: string; content: string }
+const attachedFiles: AttachedFile[] = []
 
 vscode.postMessage({ type: 'ready' })
 
-// Auto-grow textarea
+// ── Input auto-grow ────────────────────────────────────────
+
 inputEl.addEventListener('input', () => {
   inputEl.style.height = 'auto'
-  inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px'
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 200) + 'px'
 })
 
-// Enter to send, Shift+Enter for newline
 inputEl.addEventListener('keydown', (e: KeyboardEvent) => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault()
@@ -49,14 +64,122 @@ inputEl.addEventListener('keydown', (e: KeyboardEvent) => {
 
 sendBtn.addEventListener('click', doSend)
 
-permissionPicker.addEventListener('change', () => {
-  vscode.postMessage({ type: 'set_permission_mode', mode: permissionPicker.value })
+// ── Slash menu toggle ──────────────────────────────────────
+
+function openMenu(): void {
+  slashMenu.classList.remove('hidden')
+}
+function closeMenu(): void {
+  slashMenu.classList.add('hidden')
+}
+
+document.getElementById('btn-slash')!.addEventListener('click', (e) => {
+  e.stopPropagation()
+  slashMenu.classList.contains('hidden') ? openMenu() : closeMenu()
 })
 
-modelPicker.addEventListener('change', () => {
-  vscode.postMessage({ type: 'start_session', model: modelPicker.value, skills: [] })
-  sessionStarted = true
+modeLabelBtn.addEventListener('click', (e) => {
+  e.stopPropagation()
+  slashMenu.classList.contains('hidden') ? openMenu() : closeMenu()
 })
+
+document.addEventListener('click', (e) => {
+  if (!slashMenu.classList.contains('hidden') && !slashMenu.contains(e.target as Node)) {
+    closeMenu()
+  }
+})
+
+slashMenu.addEventListener('click', (e) => e.stopPropagation())
+
+// ── Model picker ───────────────────────────────────────────
+
+modelPicker.addEventListener('change', () => {
+  restartSession()
+})
+
+// ── Permission mode buttons ────────────────────────────────
+
+permissionGroup.addEventListener('click', (e) => {
+  const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-mode]')
+  if (!btn) return
+  currentPermissionMode = btn.dataset.mode!
+  permissionGroup.querySelectorAll('.seg-btn').forEach((b) => b.classList.remove('active'))
+  btn.classList.add('active')
+  modeLabelBtn.textContent = btn.textContent
+  vscode.postMessage({ type: 'set_permission_mode', mode: currentPermissionMode })
+})
+
+// ── Effort buttons ─────────────────────────────────────────
+
+effortGroup.addEventListener('click', (e) => {
+  const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-effort]')
+  if (!btn) return
+  currentEffort = btn.dataset.effort!
+  effortGroup.querySelectorAll('.seg-btn').forEach((b) => b.classList.remove('active'))
+  btn.classList.add('active')
+})
+
+// ── Skills ─────────────────────────────────────────────────
+
+skillInput.addEventListener('keydown', (e: KeyboardEvent) => {
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    const name = skillInput.value.trim()
+    if (name && !activeSkills.includes(name)) {
+      addSkill(name)
+      skillInput.value = ''
+      restartSession()
+    }
+  }
+})
+
+function addSkill(name: string): void {
+  activeSkills.push(name)
+  const chip = document.createElement('span')
+  chip.className = 'chip'
+  chip.innerHTML = `${escHtml(name)}<button class="chip-remove" aria-label="Remove skill ${escHtml(name)}">✕</button>`
+  chip.querySelector('.chip-remove')!.addEventListener('click', () => {
+    const idx = activeSkills.indexOf(name)
+    if (idx !== -1) activeSkills.splice(idx, 1)
+    chip.remove()
+    restartSession()
+  })
+  skillsChips.appendChild(chip)
+}
+
+// ── File attach ────────────────────────────────────────────
+
+function triggerFilePick(): void {
+  vscode.postMessage({ type: 'pick_file' })
+  closeMenu()
+}
+
+document.getElementById('btn-attach')!.addEventListener('click', triggerFilePick)
+document.getElementById('btn-menu-attach')!.addEventListener('click', triggerFilePick)
+
+function addFileChip(file: AttachedFile): void {
+  attachedFiles.push(file)
+  fileChipsEl.classList.remove('hidden')
+  const chip = document.createElement('span')
+  chip.className = 'chip'
+  chip.innerHTML = `📎 ${escHtml(file.name)}<button class="chip-remove" aria-label="Remove ${escHtml(file.name)}">✕</button>`
+  chip.querySelector('.chip-remove')!.addEventListener('click', () => {
+    const idx = attachedFiles.indexOf(file)
+    if (idx !== -1) attachedFiles.splice(idx, 1)
+    chip.remove()
+    if (attachedFiles.length === 0) fileChipsEl.classList.add('hidden')
+  })
+  fileChipsEl.appendChild(chip)
+}
+
+// ── Session management ─────────────────────────────────────
+
+function restartSession(): void {
+  if (!sessionStarted) return
+  vscode.postMessage({ type: 'start_session', model: modelPicker.value, skills: [...activeSkills] })
+}
+
+// ── Send ───────────────────────────────────────────────────
 
 function doSend(): void {
   const content = inputEl.value.trim()
@@ -65,11 +188,21 @@ function doSend(): void {
   inputEl.style.height = 'auto'
   sendBtn.disabled = true
 
+  const context: Record<string, string> = {
+    __effort: currentEffort,
+    __thinking: String(thinkingToggle.checked),
+  }
+  for (const f of attachedFiles) {
+    context[`file:${f.name}`] = f.content
+  }
+
   appendMessage('user', content)
   currentAssistantEl = appendMessage('assistant', '')
 
-  vscode.postMessage({ type: 'send_message', content, context: {} })
+  vscode.postMessage({ type: 'send_message', content, context })
 }
+
+// ── Message helpers ────────────────────────────────────────
 
 function appendMessage(role: 'user' | 'assistant', text: string): HTMLDivElement {
   const div = document.createElement('div')
@@ -104,6 +237,8 @@ function appendToolRow(id: string, name: string, params: Record<string, unknown>
   return row
 }
 
+// ── Extension message handler ──────────────────────────────
+
 window.addEventListener('message', (e: MessageEvent) => {
   const msg: FromExtension = e.data
 
@@ -125,9 +260,8 @@ window.addEventListener('message', (e: MessageEvent) => {
     modelPicker.innerHTML = msg.list
       .map((m) => `<option value="${escHtml(m.id)}">${escHtml(m.display_name)}</option>`)
       .join('')
-    // Auto-start session with first model
     if (msg.list.length > 0 && !sessionStarted) {
-      vscode.postMessage({ type: 'start_session', model: msg.list[0].id, skills: [] })
+      vscode.postMessage({ type: 'start_session', model: msg.list[0].id, skills: [...activeSkills] })
       sessionStarted = true
     }
     return
@@ -188,7 +322,16 @@ window.addEventListener('message', (e: MessageEvent) => {
   }
 
   if (msg.type === 'permission_mode_ack') {
-    permissionPicker.value = msg.mode
+    currentPermissionMode = msg.mode
+    modeLabelBtn.textContent = modeLabel(msg.mode)
+    permissionGroup.querySelectorAll<HTMLButtonElement>('.seg-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.mode === msg.mode)
+    })
+    return
+  }
+
+  if (msg.type === 'file_picked') {
+    addFileChip({ name: msg.name, content: msg.content })
     return
   }
 
@@ -199,6 +342,12 @@ window.addEventListener('message', (e: MessageEvent) => {
     return
   }
 })
+
+// ── Helpers ────────────────────────────────────────────────
+
+function modeLabel(mode: string): string {
+  return { plan: 'Plan', ask: 'Ask', auto_edit: 'Auto Edit', auto: 'Auto' }[mode] ?? mode
+}
 
 function renderDiff(patch: string): string {
   return patch

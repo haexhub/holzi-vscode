@@ -49,6 +49,20 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
 
+    vscode.commands.registerCommand('holzi.openSettings', async () => {
+      const host = vscode.workspace.getConfiguration('holzi').get<string>('host') ?? ''
+      const token = await context.secrets.get('holzi.token')
+      const choice = await vscode.window.showQuickPick(
+        [
+          { label: '$(link) Server URL', description: host || 'not set', id: 'host' },
+          { label: '$(key) Sign In / Token', description: token ? 'configured' : 'not set', id: 'token' },
+        ],
+        { title: 'Holzi: Settings', placeHolder: 'What would you like to configure?' },
+      )
+      if (choice?.id === 'host') vscode.commands.executeCommand('holzi.configure')
+      if (choice?.id === 'token') vscode.commands.executeCommand('holzi.login')
+    }),
+
     vscode.commands.registerCommand('holzi.login', async () => {
       const config = vscode.workspace.getConfiguration('holzi')
       const value = await vscode.window.showInputBox({

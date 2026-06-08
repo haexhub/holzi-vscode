@@ -35,6 +35,7 @@ export class HolziPanel {
       retainContextWhenHidden: true,
       localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'out', 'webview')],
     })
+    panel.iconPath = vscode.Uri.joinPath(context.extensionUri, 'images', 'icon.png')
 
     const host = getHost() || 'https://holzi.haex.cloud'
     const token = await getToken(context)
@@ -154,7 +155,7 @@ export class HolziPanel {
     }
   }
 
-  private _handleWebviewMessage(msg: any): void {
+  private async _handleWebviewMessage(msg: any): Promise<void> {
     switch (msg.type) {
       case 'ready':
         this._post({ type: 'status', connected: this.socket.connected, connecting: !this.socket.connected })
@@ -190,6 +191,19 @@ export class HolziPanel {
         if (resolve) {
           this.pendingConfirms.delete(msg.id as string)
           resolve(msg.allowed as boolean)
+        }
+        break
+      }
+
+      case 'pick_file': {
+        const uris = await vscode.window.showOpenDialog({ canSelectMany: false, openLabel: 'Attach' })
+        if (uris && uris.length > 0) {
+          try {
+            const content = fs.readFileSync(uris[0].fsPath, 'utf-8')
+            this._post({ type: 'file_picked', name: path.basename(uris[0].fsPath), content })
+          } catch {
+            this._post({ type: 'error', message: 'Could not read file (binary or permission denied)' })
+          }
         }
         break
       }
