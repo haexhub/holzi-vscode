@@ -20,6 +20,5 @@ export default defineConfig({
     },
     outDir: 'out/webview',
     emptyOutDir: true,
-    cssCodeSplit: false,
   },
 })

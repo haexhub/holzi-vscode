@@ -9,4 +9,4 @@ docs/
 .worktrees/
 tsconfig*.json
 vitest.config.ts
-vite.config.ts
+vite.config.mts
