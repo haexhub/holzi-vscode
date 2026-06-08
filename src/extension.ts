@@ -20,8 +20,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // Commands
   context.subscriptions.push(
-    vscode.commands.registerCommand('holzi.openChat', (sessionId?: string) => {
-      HolziPanel.createOrShow(context, sessionId)
+    vscode.commands.registerCommand('holzi.openChat', async (sessionId?: string) => {
+      await HolziPanel.createOrShow(context, sessionId)
     }),
 
     vscode.commands.registerCommand('holzi.configure', async () => {
@@ -31,7 +31,7 @@ export function activate(context: vscode.ExtensionContext): void {
         title: 'Holzi: Configure Server',
         prompt: 'Enter Holzi server URL',
         value: current,
-        validateInput: v => v.startsWith('http') ? null : 'Must start with http:// or https://',
+        validateInput: v => /^https?:\/\/.+/.test(v) ? null : 'Must start with http:// or https://',
       })
       if (value !== undefined) {
         await config.update('host', value.replace(/\/$/, ''), vscode.ConfigurationTarget.Global)
@@ -49,7 +49,7 @@ export function activate(context: vscode.ExtensionContext): void {
         placeHolder: 'Paste token here',
       })
       if (value !== undefined && value.trim() !== '') {
-        await config.update('token', value.trim(), vscode.ConfigurationTarget.Global)
+        await context.secrets.store('holzi.token', value.trim())
         statusBar.text = '$(check) Holzi'
         statusBar.tooltip = 'Holzi: connected'
         statusBar.command = undefined

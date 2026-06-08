@@ -5,9 +5,8 @@ import { readFile, writeFile, listDir } from './tools/filesystem'
 import { runCommand } from './tools/terminal'
 import { getSelection, applyDiff, openFile } from './tools/editor'
 import type { ServerMessage, ClientMessage } from './HolziSocket'
-
-const ALL_TOOLS = ['read_file', 'write_file', 'list_dir', 'run_command',
-                   'get_selection', 'apply_diff', 'open_file']
+import { getToken, getHost } from './config'
+import { ALL_TOOLS } from './toolNames'
 
 export function registerChatParticipant(context: vscode.ExtensionContext): void {
   // vscode.chat is only available in VS Code 1.90+
@@ -21,9 +20,8 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
       stream: any,
       token: vscode.CancellationToken,
     ) => {
-      const config = vscode.workspace.getConfiguration('holzi')
-      const host = (config.get<string>('host') ?? '').replace(/\/$/, '')
-      const holziToken = config.get<string>('token') ?? ''
+      const host = getHost()
+      const holziToken = await getToken(context)
 
       if (!host || !holziToken) {
         stream.markdown('**Holzi not configured.** Run `Holzi: Configure Server` and `Holzi: Sign In` first.')
@@ -118,6 +116,11 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
         })
 
         socket.connect()
+
+        token.onCancellationRequested(() => {
+          socket.disconnect()
+          resolve()
+        })
       }).catch((err: Error) => {
         stream.markdown(`**Connection failed:** ${err.message}`)
       })

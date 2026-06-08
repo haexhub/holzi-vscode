@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import { mergeSessions, type SessionMeta } from './sessionUtils'
+import { getToken, getHost } from './config'
 
 const CACHE_KEY = 'holzi.sessions'
 
@@ -28,9 +29,8 @@ export class HolziSidebarProvider implements vscode.WebviewViewProvider {
   }
 
   private async _syncSessions(): Promise<void> {
-    const config = vscode.workspace.getConfiguration('holzi')
-    const host = (config.get<string>('host') ?? '').replace(/\/$/, '')
-    const token = config.get<string>('token') ?? ''
+    const host = getHost()
+    const token = await getToken(this.context)
     if (!host || !token) return
 
     try {
@@ -38,10 +38,11 @@ export class HolziSidebarProvider implements vscode.WebviewViewProvider {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (!res.ok) return
-      const remote = await res.json() as SessionMeta[]
-      const merged = mergeSessions(this._sessions(), remote)
+      const remote = await res.json()
+      if (!Array.isArray(remote)) return
+      const merged = mergeSessions(this._sessions(), remote as SessionMeta[])
       await this.context.globalState.update(CACHE_KEY, merged)
-      this._render()
+      await this._render()
     } catch {
       // network unavailable — keep local cache
     }
@@ -64,11 +65,10 @@ export class HolziSidebarProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  private _render(): void {
+  private async _render(): Promise<void> {
     if (!this.view) return
-    const config = vscode.workspace.getConfiguration('holzi')
-    const host = config.get<string>('host') ?? ''
-    const token = config.get<string>('token') ?? ''
+    const host = getHost()
+    const token = await getToken(this.context)
     const sessions = this._sessions()
     this.view.webview.html = this._buildHtml(host, token, sessions)
   }

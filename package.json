@@ -61,7 +61,8 @@
         },
         "holzi.token": {
           "type": "string",
-          "description": "Auth token (Bearer)"
+          "description": "Auth token (Bearer)",
+          "isSensitive": true
         }
       }
     }
