@@ -46,7 +46,7 @@ const modeLabels: Record<string, string> = {
     class="absolute bottom-full left-0 right-0 mb-1 z-50 rounded-lg border border-[var(--vscode-widget-border,var(--vscode-panel-border))] bg-[var(--vscode-editorWidget-background,var(--vscode-editor-background))] shadow-xl py-1.5 overflow-hidden"
     @click.stop
   >
-    <Transition name="slide">
+    <Transition name="slide" mode="out-in">
       <ModelPanel
         v-if="currentPanel === 'model'"
         key="model"

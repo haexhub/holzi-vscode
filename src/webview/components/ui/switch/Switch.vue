@@ -15,7 +15,7 @@ const emit = defineEmits<{
 
 <template>
   <SwitchRoot
-    :checked="props.checked"
+    :model-value="props.checked"
     :disabled="props.disabled"
     :class="cn(
       'peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent',
@@ -24,7 +24,7 @@ const emit = defineEmits<{
       'data-[state=unchecked]:bg-[var(--vscode-panel-border)]',
       props.class
     )"
-    @update:checked="emit('update:checked', $event)"
+    @update:model-value="emit('update:checked', $event)"
   >
     <SwitchThumb
       :class="cn(

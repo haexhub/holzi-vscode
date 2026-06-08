@@ -15,11 +15,12 @@ const emit = defineEmits<{
 const listEl = ref<HTMLElement>()
 
 watch(
-  () => props.messages.length,
+  () => props.messages,
   async () => {
     await nextTick()
     listEl.value?.lastElementChild?.scrollIntoView({ block: 'end' })
-  }
+  },
+  { deep: true }
 )
 </script>
 

@@ -93,6 +93,9 @@ window.addEventListener('message', (e: MessageEvent) => {
 
   if (msg.type === 'status') {
     connectionStatus.value = msg.connecting ? 'connecting' : msg.connected ? 'connected' : 'disconnected'
+    if (!msg.connected && !msg.connecting) {
+      sending.value = false
+    }
     return
   }
 
