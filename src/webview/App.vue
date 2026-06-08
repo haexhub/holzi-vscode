@@ -1,6 +1,8 @@
 <!-- src/webview/App.vue -->
 <script setup lang="ts">
 import { ref, inject, onMounted } from 'vue'
+import MessageList from './components/MessageList.vue'
+import InputArea from './components/InputArea.vue'
 
 type ToExtension =
   | { type: 'send_message'; content: string; context: Record<string, string | undefined> }
@@ -42,6 +44,7 @@ const activeSkills = ref<string[]>([])
 const selectedModel = ref('')
 const filePickedName = ref('')
 const filePickedContent = ref('')
+const inputAreaRef = ref<InstanceType<typeof InputArea>>()
 
 function post(msg: ToExtension) {
   vscode.postMessage(msg)
@@ -82,7 +85,7 @@ function onPickFile() {
 }
 
 function inputAreaCloseMenu() {
-  // will be wired in Task 14/15
+  inputAreaRef.value?.closeMenu()
 }
 
 window.addEventListener('message', (e: MessageEvent) => {
@@ -170,21 +173,29 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col h-screen overflow-hidden" @click="inputAreaCloseMenu">
-    <!-- MessageList will go here in Task 11 -->
-    <div class="flex-1 overflow-y-auto px-4 py-3 text-[var(--vscode-foreground)]">
-      <p v-if="messages.length === 0" class="text-[var(--vscode-descriptionForeground)] text-sm">
-        Connecting…
-      </p>
-      <div v-for="(msg, i) in messages" :key="i" class="mb-2">
-        <div v-if="msg.kind === 'user'" class="text-right text-sm">{{ msg.text }}</div>
-        <div v-else-if="msg.kind === 'assistant'" class="text-sm whitespace-pre-wrap">{{ msg.text }}</div>
-        <div v-else-if="msg.kind === 'error'" class="text-sm text-[var(--vscode-errorForeground)]">{{ msg.text }}</div>
-        <div v-else-if="msg.kind === 'tool'" class="text-xs text-[var(--vscode-descriptionForeground)]">🔧 {{ msg.name }}</div>
-      </div>
-    </div>
-    <!-- InputArea will go here in Task 14 -->
-    <div class="shrink-0 px-2.5 pb-2.5 text-[var(--vscode-descriptionForeground)] text-xs">
-      {{ connectionStatus }} · {{ permissionMode }}
-    </div>
+    <MessageList
+      :messages="messages"
+      @tool-confirm="onToolConfirm"
+    />
+    <InputArea
+      ref="inputAreaRef"
+      :connection-status="connectionStatus"
+      :models="models"
+      :selected-model="selectedModel"
+      :permission-mode="permissionMode"
+      :effort="effort"
+      :thinking="thinking"
+      :active-skills="activeSkills"
+      :sending="sending"
+      :file-picked-name="filePickedName"
+      :file-picked-content="filePickedContent"
+      @update:selected-model="(v) => { selectedModel = v; startSession() }"
+      @update:permission-mode="onPermissionModeChange"
+      @update:effort="(v) => { effort = v }"
+      @update:thinking="(v) => { thinking = v }"
+      @update:active-skills="(v) => { activeSkills = v; startSession() }"
+      @send="send"
+      @pick-file="onPickFile"
+    />
   </div>
 </template>

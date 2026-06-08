@@ -1,9 +1,17 @@
 <!-- src/webview/components/ToolRow.vue -->
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Message } from '../App.vue'
 
-type ToolMessage = Extract<Message, { kind: 'tool' }>
+interface ToolMessage {
+  kind: 'tool'
+  id: string
+  name: string
+  params: Record<string, unknown>
+  result?: string
+  denied?: boolean
+  diff?: string
+  needsConfirm?: boolean
+}
 
 const props = defineProps<ToolMessage>()
 
