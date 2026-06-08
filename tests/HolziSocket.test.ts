@@ -8,17 +8,23 @@ describe('HolziSocket', () => {
   let port: number
 
   beforeAll(async () => {
-    wss = new WebSocketServer({ port: 0 })
+    wss = new WebSocketServer({ host: '127.0.0.1', port: 0 })
+    await new Promise<void>((resolve, reject) => {
+      wss.once('listening', resolve)
+      wss.once('error', reject)
+    })
     port = (wss.address() as any).port
   })
 
-  afterAll(() => {
-    wss.close()
+  afterAll(async () => {
+    await new Promise<void>((resolve, reject) => {
+      wss.close((err) => err ? reject(err) : resolve())
+    })
   })
 
   it('emits stream_chunk messages from server', async () => {
     const received: ServerMessage[] = []
-    const socket = new HolziSocket(`ws://localhost:${port}`, 'test-token')
+    const socket = new HolziSocket(`ws://127.0.0.1:${port}`, 'test-token')
     socket.on('message', (m: ServerMessage) => received.push(m))
 
     await new Promise<void>((resolve) => {
@@ -35,7 +41,7 @@ describe('HolziSocket', () => {
 
   it('sends messages as JSON to server', async () => {
     const serverReceived: any[] = []
-    const socket = new HolziSocket(`ws://localhost:${port}`, 'test-token')
+    const socket = new HolziSocket(`ws://127.0.0.1:${port}`, 'test-token')
 
     await new Promise<void>((resolve) => {
       wss.once('connection', (ws) => {
@@ -53,7 +59,7 @@ describe('HolziSocket', () => {
   })
 
   it('connected getter is true when open', async () => {
-    const socket = new HolziSocket(`ws://localhost:${port}`, 'test-token')
+    const socket = new HolziSocket(`ws://127.0.0.1:${port}`, 'test-token')
     expect(socket.connected).toBe(false)
 
     await new Promise<void>((resolve) => {

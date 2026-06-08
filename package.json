@@ -3,6 +3,7 @@
   "displayName": "Holzi",
   "description": "Holzi AI assistant in VS Code",
   "version": "0.1.2",
+  "packageManager": "pnpm@10.33.2",
   "publisher": "haex",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -72,21 +73,20 @@
     "watch": "tsc -p tsconfig.json --watch",
     "compile:webview": "tsc -p tsconfig.webview.json",
     "test": "vitest run",
-    "mock-server": "npx ts-node mock-server/index.ts",
-    "package": "npx @vscode/vsce package"
+    "mock-server": "ts-node mock-server/index.ts",
+    "package": "vsce package"
   },
   "dependencies": {
-    "diff": "^5.2.0",
-    "ws": "^8.16.0"
+    "diff": "^9.0.0",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
-    "@types/diff": "^5.2.1",
-    "@types/node": "^20.0.0",
-    "@types/vscode": "^1.90.0",
-    "@types/ws": "^8.5.10",
-    "typescript": "^5.4.0",
-    "vitest": "^1.6.0",
-    "@vscode/vsce": "^2.24.0",
-    "ts-node": "^10.9.2"
+    "@types/node": "^25.9.2",
+    "@types/vscode": "^1.120.0",
+    "@types/ws": "^8.18.1",
+    "@vscode/vsce": "^3.9.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
   }
 }
