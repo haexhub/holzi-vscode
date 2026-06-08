@@ -2,7 +2,7 @@
   "name": "holzi-vscode",
   "displayName": "Holzi",
   "description": "Holzi AI assistant in VS Code",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "haex",
   "license": "MIT",
   "icon": "images/icon.png",
