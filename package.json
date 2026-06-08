@@ -14,13 +14,42 @@
     "url": "https://github.com/haexhub/holzi-vscode/issues"
   },
   "homepage": "https://github.com/haexhub/holzi-vscode#readme",
-  "engines": { "vscode": "^1.85.0" },
+  "engines": { "vscode": "^1.90.0" },
   "categories": ["AI"],
   "keywords": ["ai", "chat", "assistant", "holzi"],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-      { "command": "holzi.openChat", "title": "Holzi: Open Chat" }
+      { "command": "holzi.openChat", "title": "Holzi: Open Chat" },
+      { "command": "holzi.configure", "title": "Holzi: Configure Server" },
+      { "command": "holzi.login", "title": "Holzi: Sign In" }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "holzi-sidebar",
+          "title": "Holzi",
+          "icon": "images/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "holzi-sidebar": [
+        {
+          "type": "webview",
+          "id": "holzi.sidebarView",
+          "name": "Chats"
+        }
+      ]
+    },
+    "chatParticipants": [
+      {
+        "id": "holzi.chat",
+        "fullName": "Holzi",
+        "name": "holzi",
+        "description": "Holzi AI Assistant",
+        "isSticky": true
+      }
     ],
     "configuration": {
       "title": "Holzi",
