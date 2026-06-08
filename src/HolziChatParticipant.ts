@@ -88,13 +88,18 @@ export function registerChatParticipant(context: vscode.ExtensionContext): void 
               break
 
             case 'tool_call': {
-              stream.progress(`Running: ${msg.name}`)
-              const result = await registry.execute(msg.name, msg.params as Record<string, unknown>)
-              const denied = 'error' in result && result.error === 'user_denied'
-              const wire: ClientMessage = denied
-                ? { type: 'tool_result', id: msg.id, error: 'user_denied' }
-                : { type: 'tool_result', id: msg.id, result: 'result' in result ? result.result : result.error }
-              socket.send(wire)
+              try {
+                stream.progress(`Running: ${msg.name}`)
+                const result = await registry.execute(msg.name, msg.params as Record<string, unknown>)
+                const denied = 'error' in result && result.error === 'user_denied'
+                const wire: ClientMessage = denied
+                  ? { type: 'tool_result', id: msg.id, error: 'user_denied' }
+                  : { type: 'tool_result', id: msg.id, result: 'result' in result ? result.result : result.error }
+                socket.send(wire)
+              } catch (err) {
+                socket.disconnect()
+                reject(err instanceof Error ? err : new Error(String(err)))
+              }
               break
             }
 
