@@ -2,7 +2,7 @@
   "name": "holzi-vscode",
   "displayName": "Holzi",
   "description": "Holzi AI assistant in VS Code",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "haex",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -14,13 +14,42 @@
     "url": "https://github.com/haexhub/holzi-vscode/issues"
   },
   "homepage": "https://github.com/haexhub/holzi-vscode#readme",
-  "engines": { "vscode": "^1.85.0" },
+  "engines": { "vscode": "^1.90.0" },
   "categories": ["AI"],
   "keywords": ["ai", "chat", "assistant", "holzi"],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-      { "command": "holzi.openChat", "title": "Holzi: Open Chat" }
+      { "command": "holzi.openChat", "title": "Holzi: Open Chat" },
+      { "command": "holzi.configure", "title": "Holzi: Configure Server" },
+      { "command": "holzi.login", "title": "Holzi: Sign In" }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "holzi-sidebar",
+          "title": "Holzi",
+          "icon": "images/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "holzi-sidebar": [
+        {
+          "type": "webview",
+          "id": "holzi.sidebarView",
+          "name": "Chats"
+        }
+      ]
+    },
+    "chatParticipants": [
+      {
+        "id": "holzi.chat",
+        "fullName": "Holzi",
+        "name": "holzi",
+        "description": "Holzi AI Assistant",
+        "isSticky": true
+      }
     ],
     "configuration": {
       "title": "Holzi",
@@ -32,7 +61,8 @@
         },
         "holzi.token": {
           "type": "string",
-          "description": "Auth token (Bearer)"
+          "description": "Auth token (Bearer)",
+          "isSensitive": true
         }
       }
     }
@@ -52,7 +82,7 @@
   "devDependencies": {
     "@types/diff": "^5.2.1",
     "@types/node": "^20.0.0",
-    "@types/vscode": "^1.85.0",
+    "@types/vscode": "^1.90.0",
     "@types/ws": "^8.5.10",
     "typescript": "^5.4.0",
     "vitest": "^1.6.0",

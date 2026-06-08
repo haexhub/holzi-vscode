@@ -7,10 +7,10 @@ import { ToolRegistry, PermissionMode } from './tools/index'
 import { readFile, writeFile, listDir } from './tools/filesystem'
 import { runCommand } from './tools/terminal'
 import { getSelection, applyDiff, openFile } from './tools/editor'
+import { getToken, getHost } from './config'
+import { ALL_TOOLS } from './toolNames'
 
 const VIEW_TYPE = 'holziChat'
-const ALL_TOOLS = ['read_file', 'write_file', 'list_dir', 'run_command',
-                   'get_selection', 'apply_diff', 'open_file']
 
 export class HolziPanel {
   private static current: HolziPanel | undefined
@@ -18,9 +18,10 @@ export class HolziPanel {
   private readonly panel: vscode.WebviewPanel
   private readonly socket: HolziSocket
   private readonly registry: ToolRegistry
+  private readonly token: string
   private readonly pendingConfirms = new Map<string, (allowed: boolean) => void>()
 
-  static createOrShow(context: vscode.ExtensionContext): void {
+  static async createOrShow(context: vscode.ExtensionContext, sessionId?: string): Promise<void> {
     if (HolziPanel.current) {
       HolziPanel.current.panel.reveal()
       return
@@ -35,17 +36,17 @@ export class HolziPanel {
       localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'out', 'webview')],
     })
 
-    HolziPanel.current = new HolziPanel(panel, context)
+    const host = getHost() || 'https://holzi.haex.cloud'
+    const token = await getToken(context)
+    HolziPanel.current = new HolziPanel(panel, context, host, token)
   }
 
-  private constructor(panel: vscode.WebviewPanel, context: vscode.ExtensionContext) {
+  private constructor(panel: vscode.WebviewPanel, context: vscode.ExtensionContext, host: string, token: string) {
     this.panel = panel
+    this.token = token
     this.registry = new ToolRegistry()
     this._registerTools()
 
-    const config = vscode.workspace.getConfiguration('holzi')
-    const host = (config.get<string>('host') ?? 'https://holzi.haex.cloud').replace(/\/$/, '')
-    const token = config.get<string>('token') ?? ''
     const wsUrl = host.replace(/^http/, 'ws') + '/ws/agent'
 
     this.socket = new HolziSocket(wsUrl, token)
@@ -116,13 +117,20 @@ export class HolziPanel {
           this._post({ type: 'tool_result_display', id: msg.id, result: resultStr, denied })
           const wireMsg: ClientMessage = denied
             ? { type: 'tool_result', id: msg.id, error: 'user_denied' }
-            : { type: 'tool_result', id: msg.id, result: resultStr }
+            : 'error' in toolResult
+              ? { type: 'tool_result', id: msg.id, error: toolResult.error }
+              : { type: 'tool_result', id: msg.id, result: toolResult.result }
           this.socket.send(wireMsg)
           break
         }
 
         case 'permission_mode_ack':
           this._post({ type: 'permission_mode_ack', mode: msg.mode })
+          break
+
+        case 'error':
+          this._post({ type: 'error', message: msg.message })
+          this._post({ type: 'stream_done' })
           break
       }
     })
@@ -131,9 +139,8 @@ export class HolziPanel {
   }
 
   private async _loadModels(): Promise<void> {
-    const config = vscode.workspace.getConfiguration('holzi')
-    const host = (config.get<string>('host') ?? 'https://holzi.haex.cloud').replace(/\/$/, '')
-    const token = config.get<string>('token') ?? ''
+    const host = getHost() || 'https://holzi.haex.cloud'
+    const token = this.token
     try {
       const res = await fetch(`${host}/api/llm/models`, {
         headers: { Authorization: `Bearer ${token}` },
