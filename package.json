@@ -2,11 +2,21 @@
   "name": "holzi-vscode",
   "displayName": "Holzi",
   "description": "Holzi AI assistant in VS Code",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "haex",
+  "license": "MIT",
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/haexhub/holzi-vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/haexhub/holzi-vscode/issues"
+  },
+  "homepage": "https://github.com/haexhub/holzi-vscode#readme",
   "engines": { "vscode": "^1.85.0" },
   "categories": ["AI"],
-  "activationEvents": ["onCommand:holzi.openChat"],
+  "keywords": ["ai", "chat", "assistant", "holzi"],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
