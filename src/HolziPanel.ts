@@ -223,17 +223,12 @@ export class HolziPanel {
     ).join('')
 
     const htmlPath = path.join(context.extensionPath, 'src', 'webview', 'index.html')
-    const cssPath = path.join(context.extensionPath, 'src', 'webview', 'style.css')
     const jsUri = webview.asWebviewUri(
       vscode.Uri.joinPath(context.extensionUri, 'out', 'webview', 'main.js'),
     )
 
-    let html = fs.readFileSync(htmlPath, 'utf-8')
-    const css = fs.readFileSync(cssPath, 'utf-8')
-
-    return html
+    return fs.readFileSync(htmlPath, 'utf-8')
       .replace(/\{\{NONCE\}\}/g, nonce)
-      .replace('{{STYLES}}', css)
       .replace('{{MAIN_JS}}', jsUri.toString())
   }
 }

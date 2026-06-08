@@ -103,24 +103,36 @@
   "scripts": {
     "compile": "tsc -p tsconfig.json",
     "watch": "tsc -p tsconfig.json --watch",
-    "compile:webview": "tsc -p tsconfig.webview.json",
+    "compile:webview": "vite build",
+    "dev:webview": "vite build --watch",
     "bundle": "rolldown src/extension.ts --format cjs --platform node --external vscode --file out/extension.js --sourcemap",
     "test": "vitest run",
     "mock-server": "ts-node mock-server/index.ts",
     "package": "pnpm run compile && pnpm run compile:webview && pnpm run bundle && vsce package --no-dependencies"
   },
   "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "diff": "^9.0.0",
+    "reka-ui": "^2.9.9",
+    "tailwind-merge": "^3.6.0",
+    "vue": "^3.5.35",
     "ws": "^8.21.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.0",
     "@types/node": "^25.9.2",
     "@types/vscode": "^1.120.0",
     "@types/ws": "^8.18.1",
+    "@vitejs/plugin-vue": "^6.0.7",
     "@vscode/vsce": "^3.9.2",
+    "@vue/tsconfig": "^0.9.1",
     "rolldown": "^1.1.0",
+    "tailwindcss": "^4.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
+    "vite": "^8.0.16",
+    "vite-plugin-css-injected-by-js": "^5.0.1",
     "vitest": "^4.1.8"
   }
 }

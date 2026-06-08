@@ -6,72 +6,9 @@
     content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-{{NONCE}}';" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Holzi</title>
-  <style>{{STYLES}}</style>
 </head>
 <body>
-  <div id="messages" role="log" aria-live="polite"></div>
-
-  <div id="input-area">
-    <div id="slash-menu" class="hidden" role="dialog" aria-label="Options">
-      <div class="menu-section">
-        <div class="menu-label">Model</div>
-        <select id="model-picker" aria-label="Select model"></select>
-      </div>
-      <div class="menu-divider"></div>
-      <div class="menu-section">
-        <div class="menu-label">Mode</div>
-        <div class="btn-group" id="permission-group" role="group" aria-label="Permission mode">
-          <button class="seg-btn" data-mode="plan">Plan</button>
-          <button class="seg-btn active" data-mode="ask">Ask</button>
-          <button class="seg-btn" data-mode="auto_edit">Auto Edit</button>
-          <button class="seg-btn" data-mode="auto">Auto</button>
-        </div>
-      </div>
-      <div class="menu-divider"></div>
-      <div class="menu-section">
-        <div class="menu-label">Effort</div>
-        <div class="btn-group" id="effort-group" role="group" aria-label="Effort level">
-          <button class="seg-btn" data-effort="low">Low</button>
-          <button class="seg-btn active" data-effort="medium">Medium</button>
-          <button class="seg-btn" data-effort="high">High</button>
-          <button class="seg-btn" data-effort="max">Max</button>
-        </div>
-      </div>
-      <div class="menu-divider"></div>
-      <div class="menu-section menu-row">
-        <div class="menu-label">Thinking</div>
-        <label class="toggle" aria-label="Enable thinking mode">
-          <input type="checkbox" id="thinking-toggle" />
-          <span class="toggle-track"><span class="toggle-thumb"></span></span>
-        </label>
-      </div>
-      <div class="menu-divider"></div>
-      <div class="menu-section">
-        <div class="menu-label">Skills</div>
-        <div id="skills-chips" class="chips-row"></div>
-        <input id="skill-input" type="text" placeholder="Skill name + Enter…" autocomplete="off" />
-      </div>
-      <div class="menu-divider"></div>
-      <button id="btn-menu-attach" class="menu-action-btn">&#x1F4CE; Attach file</button>
-    </div>
-
-    <div id="input-container">
-      <div id="file-chips" class="chips-row hidden"></div>
-      <textarea id="input" rows="1" placeholder="Message Holzi…" aria-label="Message input"></textarea>
-      <div id="input-toolbar">
-        <div id="toolbar-left">
-          <button id="btn-attach" title="Attach file" aria-label="Attach file">&#x2B;</button>
-          <button id="btn-slash" title="Options" aria-label="Open options">&#x2F;</button>
-        </div>
-        <div id="toolbar-right">
-          <span id="status-dot" class="dot disconnected" title="Disconnected" aria-label="Connection status"></span>
-          <button id="btn-mode-label" class="mode-label" title="Open options" aria-label="Current mode">Ask</button>
-          <button id="btn-send" title="Send (Enter)" aria-label="Send message">&#x27A4;</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <div id="app"></div>
   <script nonce="{{NONCE}}" src="{{MAIN_JS}}"></script>
 </body>
 </html>
