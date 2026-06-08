@@ -20,7 +20,7 @@ export class HolziPanel {
   private readonly registry: ToolRegistry
   private readonly pendingConfirms = new Map<string, (allowed: boolean) => void>()
 
-  static createOrShow(context: vscode.ExtensionContext): void {
+  static createOrShow(context: vscode.ExtensionContext, sessionId?: string): void {
     if (HolziPanel.current) {
       HolziPanel.current.panel.reveal()
       return
