@@ -6,31 +6,9 @@
     content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-{{NONCE}}';" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Holzi</title>
-  <style>{{STYLES}}</style>
 </head>
 <body>
-  <div id="header">
-    <select id="model-picker" title="Model" aria-label="Select model"></select>
-    <span id="status-dot" class="dot disconnected" title="Disconnected" aria-label="Connection status"></span>
-  </div>
-
-  <div id="messages" role="log" aria-live="polite"></div>
-
-  <div id="input-bar">
-    <button id="btn-context" title="Add context" aria-label="Add context">+</button>
-    <button id="btn-skills" title="Skills (@)" aria-label="Add skill">@</button>
-    <div id="input-wrap">
-      <textarea id="input" rows="1" placeholder="Message Holzi..." aria-label="Message input"></textarea>
-    </div>
-    <select id="permission-picker" title="Permission mode" aria-label="Permission mode">
-      <option value="plan">Plan</option>
-      <option value="ask" selected>Ask</option>
-      <option value="auto_edit">Auto Edit</option>
-      <option value="auto">Auto</option>
-    </select>
-    <button id="btn-send" title="Send" aria-label="Send message">&#x27A4;</button>
-  </div>
-
+  <div id="app"></div>
   <script nonce="{{NONCE}}" src="{{MAIN_JS}}"></script>
 </body>
 </html>

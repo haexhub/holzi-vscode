@@ -3,9 +3,10 @@
 node_modules/
 src/**
 !src/webview/index.html
-!src/webview/style.css
 tests/
 mock-server/
 docs/
+.worktrees/
 tsconfig*.json
 vitest.config.ts
+vite.config.ts

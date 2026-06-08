@@ -89,7 +89,8 @@
   "scripts": {
     "compile": "tsc -p tsconfig.json",
     "watch": "tsc -p tsconfig.json --watch",
-    "compile:webview": "tsc -p tsconfig.webview.json",
+    "compile:webview": "vite build",
+    "dev:webview": "vite build --watch",
     "test": "vitest run",
     "mock-server": "ts-node mock-server/index.ts",
     "package": "vsce package"
